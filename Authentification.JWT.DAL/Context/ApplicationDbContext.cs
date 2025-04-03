@@ -1,6 +1,5 @@
 ﻿using Authentification.JWT.DAL.Models;
-using Microsoft.EntityFrameworkCore; // ✅ À ajouter ici
-using System;
+using Microsoft.EntityFrameworkCore;
 
 namespace Authentification.JWT.DAL.Context
 {
