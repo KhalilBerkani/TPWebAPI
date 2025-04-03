@@ -20,5 +20,15 @@ namespace Authentification.JWT.DAL.Context
         /// Représente la table des utilisateurs dans la base de données.
         /// </summary>
         public DbSet<User> Users { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Crée un index unique sur la colonne Username pour garantir l'unicité
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Username)
+                .IsUnique();
+        }
     }
 }
