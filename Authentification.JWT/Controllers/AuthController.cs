@@ -18,13 +18,21 @@ namespace Authentification.JWT.Controllers
             _userService = userService;
             _jwtService = jwtService;
         }
-
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
-            var user = await _userService.RegisterUserAsync(model.Username, model.Email, model.Password);
-            return Ok(user);
+            try
+            {
+                var user = await _userService.RegisterUserAsync(model.Username, model.Email, model.Password);
+                return Ok(user);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
+
+
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
@@ -34,7 +42,7 @@ namespace Authentification.JWT.Controllers
                 return Unauthorized("Utilisateur non trouvé.");
 
             if (!_userService.VerifyPassword(userEntity.PasswordHash, model.Password))
-                return Unauthorized("Mot de passe incorrect.");
+                return Unauthorized("Mot de passe incorrect");
 
             var token = _jwtService.GenerateToken(userEntity.Id);
             return Ok(new { token });

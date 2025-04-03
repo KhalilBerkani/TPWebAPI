@@ -1,5 +1,4 @@
-﻿// Service/Services/UserService.cs
-using Authentification.JWT.DAL.Models;
+﻿using Authentification.JWT.DAL.Models;
 using Authentification.JWT.DAL.Repositories;
 using Authentification.JWT.Service.DTOs;
 using AutoMapper;
@@ -32,6 +31,10 @@ namespace Authentification.JWT.Service.Services
 
         public async Task<UserDto> RegisterUserAsync(string username, string email, string password)
         {
+            var passwordErrors = ValidatePassword(password);
+            if (passwordErrors.Any())
+                throw new ArgumentException(string.Join(" ", passwordErrors));
+
             string hashedPassword = HashPassword(password);
 
             var user = new User
@@ -45,6 +48,8 @@ namespace Authentification.JWT.Service.Services
             return _mapper.Map<UserDto>(createdUser);
         }
 
+
+
         public bool VerifyPassword(string hashedPassword, string passwordToCheck)
         {
             return hashedPassword == HashPassword(passwordToCheck);
@@ -56,5 +61,28 @@ namespace Authentification.JWT.Service.Services
             var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
             return Convert.ToBase64String(bytes);
         }
+
+        public List<string> ValidatePassword(string password)
+        {
+            var errors = new List<string>();
+
+            if (password.Length < 8)
+                errors.Add("Le mot de passe doit contenir au moins 8 caractères.");
+
+            if (!password.Any(char.IsUpper))
+                errors.Add("Le mot de passe doit contenir au moins une lettre majuscule.");
+
+            if (!password.Any(char.IsLower))
+                errors.Add("Le mot de passe doit contenir au moins une lettre minuscule.");
+
+            if (!password.Any(char.IsDigit))
+                errors.Add("Le mot de passe doit contenir au moins un chiffre.");
+
+            if (!password.Any(ch => !char.IsLetterOrDigit(ch)))
+                errors.Add("Le mot de passe doit contenir au moins un caractère spécial (ex: @, #, !).");
+
+            return errors;
+        }
+
     }
 }
