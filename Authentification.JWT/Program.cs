@@ -6,19 +6,19 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Authentification.JWT.Services;
+using Authentification.JWT.Service.Repositories;
+
+using Authentification.JWT.Service.Extensions; // Assure-toi d'importer le bon namespace
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Enregistrer les services du DAL
+builder.Services.AddDalServices(builder.Configuration.GetConnectionString("DefaultConnection"));
 
 builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
-
 
 var key = builder.Configuration["Jwt:Key"];
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
