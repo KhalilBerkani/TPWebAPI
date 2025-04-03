@@ -41,8 +41,9 @@ namespace Authentification.JWT.Controllers
             if (userEntity == null)
                 return Unauthorized("Utilisateur non trouvé.");
 
-            if (!_userService.VerifyPassword(userEntity.PasswordHash, model.Password))
-                return Unauthorized("Mot de passe incorrect");
+            if (!_userService.VerifyPassword(userEntity.PasswordHash, userEntity.PasswordSalt, model.Password))
+                return Unauthorized("Mot de passe incorrect.");
+
 
             var token = _jwtService.GenerateToken(userEntity.Id);
             return Ok(new { token });

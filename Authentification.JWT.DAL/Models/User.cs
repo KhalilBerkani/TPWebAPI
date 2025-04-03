@@ -12,5 +12,6 @@ namespace Authentification.JWT.DAL.Models
         public string Username { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty; // Stocké sous forme hachée
+        public string PasswordSalt { get; set; } = string.Empty;
     }
 }

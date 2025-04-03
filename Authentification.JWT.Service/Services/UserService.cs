@@ -35,13 +35,15 @@ namespace Authentification.JWT.Service.Services
             if (passwordErrors.Any())
                 throw new ArgumentException(string.Join(" ", passwordErrors));
 
-            string hashedPassword = HashPassword(password);
+            string salt = GenerateSalt();
+            string hashedPassword = HashPassword(password, salt);
 
             var user = new User
             {
                 Username = username,
                 Email = email,
-                PasswordHash = hashedPassword
+                PasswordHash = hashedPassword,
+                PasswordSalt = salt
             };
 
             var createdUser = await _userRepository.RegisterUserAsync(user);
@@ -50,17 +52,22 @@ namespace Authentification.JWT.Service.Services
 
 
 
-        public bool VerifyPassword(string hashedPassword, string passwordToCheck)
-        {
-            return hashedPassword == HashPassword(passwordToCheck);
-        }
-
-        private string HashPassword(string password)
+        private string HashPassword(string password, string salt)
         {
             using var sha256 = SHA256.Create();
-            var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return Convert.ToBase64String(bytes);
+            var combinedBytes = Encoding.UTF8.GetBytes(password + salt);
+            var hashBytes = sha256.ComputeHash(combinedBytes);
+            return Convert.ToBase64String(hashBytes);
         }
+
+        public bool VerifyPassword(string storedHash, string storedSalt, string passwordToCheck)
+        {
+            string hashedInput = HashPassword(passwordToCheck, storedSalt);
+            return storedHash == hashedInput;
+        }
+
+
+
 
         public List<string> ValidatePassword(string password)
         {
@@ -83,6 +90,12 @@ namespace Authentification.JWT.Service.Services
 
             return errors;
         }
-
+        private string GenerateSalt(int size = 32)
+        {
+            var rng = RandomNumberGenerator.Create();
+            var saltBytes = new byte[size];
+            rng.GetBytes(saltBytes);
+            return Convert.ToBase64String(saltBytes);
+        }
     }
 }
